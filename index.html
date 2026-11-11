@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DTZ AI Code Assistant — Dark Tech Zone</title>
+<style>
+  :root{
+    --bg:#f7f7f8; --card:#ffffff; --ink:#1a1a1e; --muted:#6b7280; --line:#e5e7eb;
+    --accent:#0f766e; --accent-soft:#e6f4f2; --danger:#dc2626; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+  header{background:var(--card);border-bottom:1px solid var(--line);padding:14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .logo{width:38px;height:38px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex:none}
+  .logo svg{width:22px;height:22px}
+  h1{font-size:19px;margin:0}
+  h1 span{color:var(--accent)}
+  .sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .status{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);background:var(--bg);border:1px solid var(--line);padding:7px 12px;border-radius:999px}
+  .dot{width:9px;height:9px;border-radius:50%;background:#9ca3af}
+  .dot.on{background:#16a34a;box-shadow:0 0 0 3px rgba(22,163,74,.18)}
+  .dot.off{background:#dc2626}
+  main{max-width:980px;margin:0 auto;padding:20px 16px 48px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:16px}
+  label{font-size:13px;font-weight:600;display:block;margin-bottom:6px}
+  textarea{width:100%;min-height:190px;resize:vertical;border:1px solid var(--line);border-radius:10px;padding:12px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.55;background:#fafafa;color:var(--ink)}
+  textarea:focus{outline:2px solid var(--accent);outline-offset:1px;background:#fff}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-top:12px}
+  select{border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:13.5px;background:#fff;color:var(--ink)}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  button{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:9px;padding:10px 14px;font-size:13.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+  button:hover{border-color:#cbd5e1;background:#f9fafb}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  button.primary:hover{background:#0d5f59}
+  button:disabled{opacity:.55;cursor:not-allowed}
+  button.danger{color:var(--danger);border-color:#fecaca}
+  button.danger:hover{background:#fef2f2}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .chip{font-size:12.5px;background:var(--accent-soft);color:#115e59;border:1px solid #cce8e4;border-radius:999px;padding:6px 11px;cursor:pointer}
+  .chip:hover{background:#d3ece8}
+  .hint{font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.5}
+  #resultWrap{display:none}
+  #result{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.6;background:#0f172a;color:#e2e8f0;border-radius:10px;padding:16px;max-height:560px;overflow:auto;margin:0}
+  .result-bar{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+  .result-bar .title{font-weight:700;font-size:14px}
+  .spinner{width:15px;height:15px;border:2px solid #cce8e4;border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;display:none}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  #error{display:none;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:10px;padding:12px 14px;font-size:13.5px;margin-top:12px}
+  .recent-title{font-size:13px;font-weight:700;margin-bottom:8px}
+  .recent-item{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:9px;padding:9px 12px;font-size:13px;cursor:pointer;margin-bottom:7px;color:var(--ink)}
+  .recent-item:hover{border-color:var(--accent)}
+  .recent-item small{color:var(--muted);display:block;font-size:11.5px;margin-top:2px}
+  .empty{font-size:13px;color:var(--muted)}
+  footer{text-align:center;font-size:12.5px;color:var(--muted);padding:0 16px 30px;line-height:1.6}
+  @media (max-width:600px){ .row select{flex:1} }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+  </div>
+  <div>
+    <h1>DTZ <span>AI Code Assistant</span></h1>
+    <div class="sub">Dark Tech Zone — paste code, get a real AI answer. Free, no signup, no API key needed.</div>
+  </div>
+  <div class="status"><span class="dot" id="dot"></span><span id="statusText">Checking AI status…</span></div>
+</header>
+
+<main>
+  <div class="card">
+    <label for="code">Your code</label>
+    <textarea id="code" placeholder="Paste your code here… e.g. a Python function, a JavaScript snippet, PHP, Java, C++…"></textarea>
+
+    <div class="row">
+      <div>
+        <label for="lang">Language</label>
+        <select id="lang">
+          <option value="Auto-detect">Auto-detect</option>
+          <option>Python</option><option>JavaScript</option><option>TypeScript</option>
+          <option>PHP</option><option>Java</option><option>C++</option><option>C</option>
+          <option>Go</option><option>HTML/CSS</option><option>SQL</option><option>Other</option>
+        </select>
+      </div>
+      <div id="targetWrap" style="display:none">
+        <label for="targetLang">Convert to</label>
+        <select id="targetLang">
+          <option>Python</option><option>JavaScript</option><option>PHP</option>
+          <option>Java</option><option>C++</option><option>Go</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="primary" data-action="explain" onclick="runAction('explain', this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Explain Code</button>
+      <button data-action="fix" onclick="runAction('fix', this)">Find &amp; Fix Bugs</button>
+      <button data-action="optimize" onclick="runAction('optimize', this)">Optimize</button>
+      <button data-action="comments" onclick="runAction('comments', this)">Add Comments</button>
+      <button data-action="convert" onclick="runAction('convert', this)">Convert Language</button>
+      <button class="danger" id="stopBtn" style="display:none" onclick="stopRun()">Stop</button>
+    </div>
+
+    <div class="chips" id="examples">
+      <span class="chip" data-code="def bubble_sort(arr):&#10;    n = len(arr)&#10;    for i in range(n):&#10;        for j in range(0, n - i - 1):&#10;            if arr[j] > arr[j + 1]:&#10;                arr[j], arr[j + 1] = arr[j + 1], arr[j]&#10;    return arr">Try: Python bubble sort</span>
+      <span class="chip" data-code="function getUser(id) {&#10;  fetch('/api/users/' + id)&#10;    .then(res =&gt; res.json())&#10;    .then(data =&gt; console.log(data))&#10;}">Try: JS fetch example</span>
+      <span class="chip" data-code="for ($i = 0; $i &lt; count($users); $i++) {&#10;    echo $users[$i]['name'] . '&lt;br&gt;';">Try: PHP loop</span>
+    </div>
+
+    <div class="hint">Powered by the Dark Tech Zone AI. Your code is sent only to the DTZ AI API to generate the answer — nothing is saved on this page's server. Works on desktop and mobile browsers.</div>
+    <div id="error"></div>
+  </div>
+
+  <div class="card" id="resultWrap">
+    <div class="result-bar">
+      <span class="title" id="resultTitle">Result</span>
+      <span class="spinner" id="spinner"></span>
+      <span style="flex:1"></span>
+      <button onclick="copyResult()" id="copyBtn">Copy Result</button>
+      <button onclick="clearAll()">Clear</button>
+    </div>
+    <pre id="result"></pre>
+  </div>
+
+  <div class="card">
+    <div class="recent-title">Recent</div>
+    <div id="recent"><div class="empty">No recent requests yet. Your last 8 requests are saved in this browser only.</div></div>
+  </div>
+</main>
+
+<footer>
+  Dark Tech Zone AI Code Assistant — free tool by Dark Tech Zone.<br>
+  AI answers can be wrong — always test fixed or converted code before using it in production.
+</footer>
+
+<script>
+const API_URL = "https://dark-tech-zone-ai.vercel.app/api/chat";
+const HEALTH_URL = "https://dark-tech-zone-ai.vercel.app/api/health";
+const API_KEY = "DarkTech";
+let aborter = null;
+
+async function checkHealth(){
+  const dot = document.getElementById("dot"), txt = document.getElementById("statusText");
+  try{
+    const r = await fetch(HEALTH_URL, {signal: AbortSignal.timeout(10000)});
+    const j = await r.json();
+    if(j.status === "online"){ dot.className = "dot on"; txt.textContent = "AI online"; }
+    else { dot.className = "dot off"; txt.textContent = "AI status unknown"; }
+  }catch(e){ dot.className = "dot off"; txt.textContent = "AI unreachable — try again"; }
+}
+checkHealth();
+
+document.querySelectorAll("#examples .chip").forEach(chip=>{
+  chip.addEventListener("click", ()=>{
+    document.getElementById("code").value = chip.getAttribute("data-code");
+    document.getElementById("code").focus();
+  });
+});
+
+function showError(msg){
+  const e = document.getElementById("error");
+  e.textContent = msg; e.style.display = "block";
+}
+function hideError(){ document.getElementById("error").style.display = "none"; }
+
+function buildPrompt(action, code, lang, target){
+  const head = "You are an expert coding assistant. Reply in English. Language of the code: " + lang + ".\n\nCode:\n```\n" + code + "\n```\n\n";
+  if(action === "explain") return head + "Explain what this code does, step by step, in simple clear English. Then list any obvious problems or edge cases, if any.";
+  if(action === "fix") return head + "Find all bugs in this code. Output the FULL corrected code in one code block first, then a short bullet list of each bug you fixed and why.";
+  if(action === "optimize") return head + "Optimize this code for speed and readability. Output the FULL optimized code in one code block first, then a short bullet list of what you changed and why it is faster or cleaner.";
+  if(action === "comments") return head + "Add clear, helpful comments to this code. Output the FULL code with comments added, in one code block. Do not change the logic.";
+  if(action === "convert") return head + "Convert this code to " + target + ". Output the FULL converted code in one code block first, then a short note on anything that could not be translated exactly.";
+  return head;
+}
+
+const TITLES = {explain:"Explanation", fix:"Fixed Code", optimize:"Optimized Code", comments:"Commented Code", convert:"Converted Code"};
+
+async function runAction(action, btn){
+  const code = document.getElementById("code").value.trim();
+  if(!code){ showError("Please paste some code first."); return; }
+  if(code.length > 12000){ showError("Code is too long — please keep it under 12,000 characters."); return; }
+  hideError();
+  document.querySelectorAll(".actions button").forEach(b=>b.disabled = true);
+  document.getElementById("stopBtn").style.display = "";
+  document.getElementById("stopBtn").disabled = false;
+  document.getElementById("targetWrap").style.display = action === "convert" ? "" : "none";
+  document.getElementById("resultWrap").style.display = "block";
+  document.getElementById("resultTitle").textContent = TITLES[action] || "Result";
+  document.getElementById("result").textContent = "";
+  document.getElementById("spinner").style.display = "inline-block";
+
+  const lang = document.getElementById("lang").value;
+  const target = document.getElementById("targetLang").value;
+  const prompt = buildPrompt(action, code, lang, target);
+
+  aborter = new AbortController();
+  let full = "";
+  try{
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: {"Content-Type": "application/json", "X-API-Key": API_KEY},
+      body: JSON.stringify({q: prompt}),
+      signal: aborter.signal
+    });
+    if(!res.ok) throw new Error("AI server returned HTTP " + res.status);
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = "";
+    while(true){
+      const {done, value} = await reader.read();
+      if(done) break;
+      buf += decoder.decode(value, {stream:true});
+      let idx;
+      while((idx = buf.indexOf("\n")) >= 0){
+        const line = buf.slice(0, idx).trim();
+        buf = buf.slice(idx + 1);
+        if(!line.startsWith("data:")) continue;
+        const payload = line.slice(5).trim();
+        if(payload === "[DONE]"){ buf = ""; break; }
+        try{
+          const obj = JSON.parse(payload);
+          if(obj.chunk){ full += obj.chunk; document.getElementById("result").textContent = full; }
+        }catch(e){ /* ignore partial SSE lines */ }
+      }
+    }
+    if(!full.trim()) throw new Error("The AI returned an empty answer. Please try again.");
+    saveRecent(action, code, lang);
+  }catch(err){
+    if(err.name === "AbortError"){
+      if(!full.trim()) document.getElementById("result").textContent = "Stopped.";
+    }else{
+      showError("Could not get an answer: " + err.message + " Please check your connection and try again.");
+      if(!full.trim()) document.getElementById("result").textContent = "";
+    }
+  }finally{
+    aborter = null;
+    document.getElementById("spinner").style.display = "none";
+    document.getElementById("stopBtn").style.display = "none";
+    document.querySelectorAll(".actions button").forEach(b=>b.disabled = false);
+  }
+}
+
+function stopRun(){ if(aborter) aborter.abort(); }
+
+function copyResult(){
+  const text = document.getElementById("result").textContent;
+  if(!text.trim()) return;
+  const done = ()=>{ const b = document.getElementById("copyBtn"); b.textContent = "Copied"; setTimeout(()=>b.textContent = "Copy Result", 1500); };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(()=>fallbackCopy(text, done));
+  } else fallbackCopy(text, done);
+}
+function fallbackCopy(text, done){
+  const ta = document.createElement("textarea");
+  ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand("copy"); done(); }catch(e){ showError("Copy failed — please select the result text manually."); }
+  document.body.removeChild(ta);
+}
+
+function clearAll(){
+  document.getElementById("code").value = "";
+  document.getElementById("result").textContent = "";
+  document.getElementById("resultWrap").style.display = "none";
+  hideError();
+}
+
+function saveRecent(action, code, lang){
+  try{
+    let list = JSON.parse(localStorage.getItem("dtzCodeRecent") || "[]");
+    list.unshift({action: TITLES[action] || action, lang: lang, snippet: code.slice(0, 90).replace(/\s+/g, " "), time: new Date().toLocaleString()});
+    list = list.slice(0, 8);
+    localStorage.setItem("dtzCodeRecent", JSON.stringify(list));
+    renderRecent();
+  }catch(e){}
+}
+function renderRecent(){
+  const box = document.getElementById("recent");
+  let list = [];
+  try{ list = JSON.parse(localStorage.getItem("dtzCodeRecent") || "[]"); }catch(e){}
+  if(!list.length){ box.innerHTML = '<div class="empty">No recent requests yet. Your last 8 requests are saved in this browser only.</div>'; return; }
+  box.innerHTML = "";
+  list.forEach(item=>{
+    const b = document.createElement("button");
+    b.className = "recent-item";
+    b.textContent = item.action + " — " + item.snippet;
+    const s = document.createElement("small");
+    s.textContent = item.lang + " · " + item.time;
+    b.appendChild(s);
+    b.onclick = ()=>{ document.getElementById("code").value = ""; document.getElementById("code").focus(); };
+    box.appendChild(b);
+  });
+}
+renderRecent();
+</script>
+</body>
+</html>
